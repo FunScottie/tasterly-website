@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasterly - Decide What to Eat</title>
+  <meta name="description" content="Stop asking 'What should I eat?' Tasterly remembers every meal you've rated, builds your taste profile, and helps you decide in seconds. Free on the App Store.">
+  <meta name="theme-color" content="#1DB488">
+  <link rel="icon" type="image/png" href="assets/TasterlyAppIcon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Tasterly - Decide What to Eat">
+  <meta property="og:description" content="Your personal food memory. Rate meals, build your taste profile, never waste money on bad food again.">
+  <meta property="og:image" content="assets/TasterlyAppIcon.png">
+  <meta property="og:type" content="website">
+
+  <style>
+    /* ─── Reset & Base ────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --teal: #1DB488;
+      --teal-light: #2ECFA0;
+      --teal-dark: #17936F;
+      --orange: #F5923A;
+      --orange-light: #FFB066;
+      --pink: #E94E77;
+      --dark-bg: #0D1117;
+      --dark-card: #161B22;
+      --dark-card-hover: #1C2230;
+      --text-primary: #F0F6FC;
+      --text-secondary: #8B949E;
+      --text-muted: #6E7681;
+      --gradient-hero: linear-gradient(135deg, #0D1117 0%, #112130 50%, #0D1117 100%);
+      --gradient-teal: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+      --gradient-orange: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+      --glow-teal: 0 0 40px rgba(29, 180, 136, 0.3);
+      --glow-orange: 0 0 40px rgba(245, 146, 58, 0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    html, body {
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* ─── Utility ──────────────────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .accent { color: var(--teal-light); }
+    .accent-orange { color: var(--orange); }
+    .accent-pink { color: var(--pink); }
+
+    /* ─── Navigation ───────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(29, 180, 136, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .nav-brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .nav-brand span {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--teal-light); }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: #fff;
+      color: var(--dark-bg);
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-download svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ─── Hero Section ─────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: var(--gradient-hero);
+      position: relative;
+      overflow: hidden;
+      padding-top: 80px;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(29, 180, 136, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(245, 146, 58, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero-content h1 .line-rotate {
+      display: inline-block;
+      position: relative;
+    }
+
+    .hero-tagline {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    .hero-subtext {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      max-width: 440px;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: var(--gradient-teal);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-hero:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--glow-teal);
+    }
+
+    .btn-hero svg { width: 22px; height: 22px; }
+
+    .hero-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .hero-meta-item {
+      text-align: center;
+    }
+
+    .hero-meta-item .number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--teal-light);
+    }
+
+    .hero-meta-item .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Phone mockup in hero */
+    .hero-phone {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-phone img {
+      max-height: 680px;
+      width: auto;
+      border-radius: 40px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), var(--glow-teal);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* ─── Scroll text (fun ticker) ─────────────────────────────────── */
+    .scroll-ticker {
+      background: var(--teal);
+      padding: 14px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-inner {
+      display: inline-flex;
+      animation: ticker 30s linear infinite;
+    }
+
+    .ticker-inner span {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 40px;
+      color: var(--dark-bg);
+    }
+
+    .ticker-inner span::after {
+      content: '\2022';
+      margin-left: 40px;
+      opacity: 0.5;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ─── Problem Section ──────────────────────────────────────────── */
+    .problem {
+      padding: 120px 0;
+      text-align: center;
+      background: var(--dark-bg);
+      position: relative;
+    }
+
+    .problem h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+
+    .problem p {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 60px;
+    }
+
+    .pain-points {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .pain-card {
+      background: var(--dark-card);
+      border-radius: 20px;
+      padding: 32px 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .pain-card:hover {
+      border-color: rgba(29, 180, 136, 0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--glow-teal);
+    }
+
+    .pain-card .emoji {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .pain-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pain-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ─── Features Section ─────────────────────────────────────────── */
+    .features {
+      padding: 100px 0;
+    }
+
+    .features .section-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .features .section-header h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .features .section-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      margin-bottom: 120px;
+    }
+
+    .feature-row.reverse { direction: rtl; }
+    .feature-row.reverse > * { direction: ltr; }
+
+    .feature-text .feature-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .badge-teal {
+      background: rgba(29, 180, 136, 0.15);
+      color: var(--teal-light);
+    }
+
+    .badge-orange {
+      background: rgba(245, 146, 58, 0.15);
+      color: var(--orange);
+    }
+
+    .badge-pink {
+      background: rgba(233, 78, 119, 0.15);
+      color: var(--pink);
+    }
+
+    .feature-text h3 {
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .feature-text p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .feature-list li::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      background: var(--gradient-teal);
+      border-radius: 50%;
+      margin-top: 2px;
+      /* Checkmark */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z'/%3E%3C/svg%3E");
+      background-size: 14px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .feature-image {
+      display: flex;
+      justify-content: center;
+    }
+
+    .feature-image img {
+      max-height: 600px;
+      width: auto;
+      border-radius: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease;
+    }
+
+    .feature-image img:hover {
+      transform: scale(1.02);
+    }
+
+    /* ─── How It Works ─────────────────────────────────────────────── */
+    .how-it-works {
+      padding: 120px 0;
+      background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-card) 50%, var(--dark-bg) 100%);
+    }
+
+    .how-it-works .section-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .how-it-works .section-header h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .how-it-works .section-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+      padding: 32px 16px;
+    }
+
+    .step-number {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--gradient-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0 auto 20px;
+      box-shadow: var(--glow-teal);
+    }
+
+    .step h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ─── Testimonial / Social Proof ───────────────────────────────── */
+    .social-proof {
+      padding: 100px 0;
+      text-align: center;
+    }
+
+    .rating-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stars {
+      color: #FFD700;
+      font-size: 1.5rem;
+      letter-spacing: 4px;
+    }
+
+    .rating-text {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .rating-sub {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 48px;
+    }
+
+    .testimonial {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--dark-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .testimonial::before {
+      content: '\201C';
+      position: absolute;
+      top: -10px;
+      left: 24px;
+      font-size: 6rem;
+      color: var(--teal);
+      opacity: 0.3;
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .testimonial p {
+      font-size: 1.15rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .testimonial cite {
+      font-style: normal;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ─── Pricing ──────────────────────────────────────────────────── */
+    .pricing {
+      padding: 100px 0;
+      background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-card) 100%);
+    }
+
+    .pricing .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .pricing .section-header h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      overflow-wrap: break-word;
+    }
+
+    .pricing .section-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--dark-card);
+      border-radius: 24px;
+      padding: 40px 32px;
+      border: 1px solid rgba(255,255,255,0.05);
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--teal);
+      box-shadow: var(--glow-teal);
+    }
+
+    .pricing-card.featured::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient-teal);
+      color: #fff;
+      padding: 4px 16px;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .pricing-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pricing-card .price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .pricing-card .price-sub {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    .pricing-card ul {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+    }
+
+    .pricing-card ul li {
+      padding: 8px 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pricing-card ul li::before {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      background: var(--teal);
+      border-radius: 50%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z'/%3E%3C/svg%3E");
+      background-size: 11px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .btn-pricing {
+      display: block;
+      padding: 14px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .btn-pricing.primary {
+      background: var(--gradient-teal);
+      color: #fff;
+    }
+
+    .btn-pricing.primary:hover {
+      box-shadow: var(--glow-teal);
+      transform: translateY(-2px);
+    }
+
+    .btn-pricing.secondary {
+      background: rgba(29, 180, 136, 0.1);
+      color: var(--teal-light);
+      border: 1px solid rgba(29, 180, 136, 0.3);
+    }
+
+    .btn-pricing.secondary:hover {
+      background: rgba(29, 180, 136, 0.2);
+    }
+
+    /* ─── Final CTA ────────────────────────────────────────────────── */
+    .final-cta {
+      padding: 120px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(29, 180, 136, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .final-cta h2 {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      position: relative;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+
+    .final-cta p {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .final-cta .btn-hero {
+      font-size: 1.2rem;
+      padding: 18px 48px;
+    }
+
+    /* ─── Footer ───────────────────────────────────────────────────── */
+    footer {
+      padding: 60px 0 40px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .footer-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    .footer-brand span {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .footer-tagline {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 300px;
+    }
+
+    .footer-links h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .footer-links ul {
+      list-style: none;
+    }
+
+    .footer-links ul li { margin-bottom: 10px; }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--teal-light); }
+
+    .footer-bottom {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-bottom p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── Animations (scroll-triggered via IntersectionObserver) ──── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ─── Mobile Menu Toggle ───────────────────────────────────────── */
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .mobile-toggle span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      margin: 6px 0;
+      transition: all 0.3s;
+    }
+
+    /* ─── Responsive ───────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero .container {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 40px;
+      }
+
+      .hero-tagline, .hero-subtext { margin-left: auto; margin-right: auto; }
+      .hero-cta { justify-content: center; }
+      .hero-meta { justify-content: center; }
+
+      .hero-phone img {
+        max-height: 500px;
+      }
+
+      .pain-points {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+
+      .feature-row,
+      .feature-row.reverse {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        direction: ltr;
+      }
+
+      .feature-image { order: -1; }
+
+      .feature-image img {
+        max-height: 460px;
+      }
+
+      .steps {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .pricing-cards {
+        grid-template-columns: 1fr;
+        max-width: 380px;
+      }
+
+      .nav-links { display: none; }
+
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(13, 17, 23, 0.98);
+        backdrop-filter: blur(20px);
+        padding: 24px;
+        border-bottom: 1px solid rgba(29, 180, 136, 0.1);
+        gap: 16px;
+      }
+
+      .mobile-toggle { display: block; }
+    }
+
+    @media (max-width: 500px) {
+      .steps { grid-template-columns: 1fr; }
+      .hero-meta { flex-direction: column; gap: 16px; }
+
+      .footer-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer-tagline { text-align: center; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navigation ──────────────────────────────────────────────── -->
+  <nav>
+    <div class="container">
+      <a href="#" class="nav-brand">
+        <img src="assets/TasterlyAppIcon.png" alt="Tasterly">
+        <span>Tasterly</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li>
+          <a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" class="btn-download" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Download Free
+          </a>
+        </li>
+      </ul>
+      <button class="mobile-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>
+          Stop asking<br>
+          <span class="accent">"What should<br>I eat?"</span>
+        </h1>
+        <p class="hero-tagline">
+          Tasterly remembers every meal you've loved, builds your taste profile, and tells you exactly what to eat next.
+        </p>
+        <p class="hero-subtext">
+          Your personal food memory. Never waste money on a bad meal again.
+        </p>
+        <div class="hero-cta">
+          <a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" class="btn-hero" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Download Free
+          </a>
+        </div>
+        <div class="hero-meta">
+          <div class="hero-meta-item">
+            <div class="number">5.0</div>
+            <div class="label">App Store Rating</div>
+          </div>
+          <div class="hero-meta-item">
+            <div class="number">Free</div>
+            <div class="label">To Download</div>
+          </div>
+          <div class="hero-meta-item">
+            <div class="number">0</div>
+            <div class="label">Data Collected</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-phone">
+        <img src="assets/phone-images/decide-for-me.png" alt="Tasterly app - Decide for Me feature">
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Scroll Ticker ───────────────────────────────────────────── -->
+  <div class="scroll-ticker">
+    <div class="ticker-inner">
+      <span>Rate Every Meal</span>
+      <span>Swipe to Decide</span>
+      <span>AI Recommendations</span>
+      <span>Scan Barcodes</span>
+      <span>Track Deals</span>
+      <span>Smart Shopping Lists</span>
+      <span>Share With Friends</span>
+      <span>Decide for Me Wheel</span>
+      <span>Rate Every Meal</span>
+      <span>Swipe to Decide</span>
+      <span>AI Recommendations</span>
+      <span>Scan Barcodes</span>
+      <span>Track Deals</span>
+      <span>Smart Shopping Lists</span>
+      <span>Share With Friends</span>
+      <span>Decide for Me Wheel</span>
+    </div>
+  </div>
+
+  <!-- ─── Problem Section ─────────────────────────────────────────── -->
+  <section class="problem">
+    <div class="container">
+      <h2 class="reveal">Sound familiar?</h2>
+      <p class="reveal reveal-delay-1">Every day, millions of people stare at menus, scroll through apps, and argue with their partner about the same question.</p>
+      <div class="pain-points">
+        <div class="pain-card reveal">
+          <span class="emoji">&#128553;</span>
+          <h3>20 minutes deciding</h3>
+          <p>You spend more time picking a restaurant than eating at one.</p>
+        </div>
+        <div class="pain-card reveal reveal-delay-1">
+          <span class="emoji">&#128176;</span>
+          <h3>Money wasted on bad meals</h3>
+          <p>You order something new, regret it, and wish you'd picked the other thing.</p>
+        </div>
+        <div class="pain-card reveal reveal-delay-2">
+          <span class="emoji">&#128588;</span>
+          <h3>"I don't know, you pick"</h3>
+          <p>You and your partner go back and forth until someone gives up. Every. Single. Night.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Features ────────────────────────────────────────────────── -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="reveal">Everything you need to<br><span class="accent">eat better, decide faster</span></h2>
+        <p class="reveal reveal-delay-1">Nine features. One app. Zero food regret.</p>
+      </div>
+
+      <!-- Feature 1: Remember -->
+      <div class="feature-row reveal">
+        <div class="feature-text">
+          <span class="feature-badge badge-teal">Your Food Memory</span>
+          <h3>Remember the <span class="accent">best dishes</span> at every restaurant</h3>
+          <p>Rate meals as Love It, Meh, Try It, or Nope. Tasterly organizes everything by restaurant so you always know what to order when you go back.</p>
+          <ul class="feature-list">
+            <li>Rate meals with one tap</li>
+            <li>Add photos and personal notes</li>
+            <li>Organized by restaurant automatically</li>
+          </ul>
+        </div>
+        <div class="feature-image">
+          <img src="assets/phone-images/2.png" alt="Remember your best dishes at every restaurant">
+        </div>
+      </div>
+
+      <!-- Feature 2: Swipe to Decide -->
+      <div class="feature-row reverse reveal">
+        <div class="feature-text">
+          <span class="feature-badge badge-orange">Decision Helper</span>
+          <h3><span class="accent-orange">Swipe your way</span> to dinner</h3>
+          <p>Can't decide? Swipe through your saved meals like a dating app. Right for yes, left for no. Dinner decided in seconds.</p>
+          <ul class="feature-list">
+            <li>Tinder-style swiping for food</li>
+            <li>"Decide for Me" spin wheel</li>
+            <li>Works for solo or couples</li>
+          </ul>
+        </div>
+        <div class="feature-image">
+          <img src="assets/phone-images/3.png" alt="Swipe to decide what to eat">
+        </div>
+      </div>
+
+      <!-- Feature 3: AI -->
+      <div class="feature-row reveal">
+        <div class="feature-text">
+          <span class="feature-badge badge-pink">AI-Powered</span>
+          <h3>Ask <span class="accent-pink">AI</span> what to eat</h3>
+          <p>Based on your ratings and taste profile, Tasterly's AI recommends dishes you haven't tried yet but will probably love. Like a friend who knows your taste perfectly.</p>
+          <ul class="feature-list">
+            <li>Personalized to YOUR taste profile</li>
+            <li>Discovers new dishes at your favorite spots</li>
+            <li>Gets smarter the more you rate</li>
+          </ul>
+        </div>
+        <div class="feature-image">
+          <img src="assets/phone-images/4.png" alt="AI-powered food recommendations">
+        </div>
+      </div>
+
+      <!-- Feature 4: Deals -->
+      <div class="feature-row reverse reveal">
+        <div class="feature-text">
+          <span class="feature-badge badge-orange">Save Money</span>
+          <h3>See <span class="accent-orange">today's deals</span> instantly</h3>
+          <p>Happy hours, daily specials, weekly deals &mdash; all in one place. Never miss $2 taco Tuesday or half-price wine night again.</p>
+          <ul class="feature-list">
+            <li>Deals organized by day of the week</li>
+            <li>Search by restaurant or deal type</li>
+            <li>Never miss your favorite specials</li>
+          </ul>
+        </div>
+        <div class="feature-image">
+          <img src="assets/phone-images/deals.png" alt="Track restaurant deals and happy hours">
+        </div>
+      </div>
+
+      <!-- Feature 5: Stores & Shopping -->
+      <div class="feature-row reveal">
+        <div class="feature-text">
+          <span class="feature-badge badge-teal">Grocery Tracker</span>
+          <h3>Track your favorite <span class="accent">store finds</span></h3>
+          <p>Not just restaurants. Rate grocery items, scan barcodes, and build smart shopping lists from your favorites. Know exactly what to grab at Costco.</p>
+          <ul class="feature-list">
+            <li>Barcode scanning for packaged foods</li>
+            <li>Smart shopping lists by store</li>
+            <li>Rate grocery items too</li>
+          </ul>
+        </div>
+        <div class="feature-image">
+          <img src="assets/phone-images/7.png" alt="Track favorite grocery store items">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ────────────────────────────────────────────── -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="reveal">Dead simple to start</h2>
+        <p class="reveal reveal-delay-1">From download to "I know exactly what I want" in under a minute.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-number">1</div>
+          <h3>Download free</h3>
+          <p>Get Tasterly from the App Store. Takes 10 seconds.</p>
+        </div>
+        <div class="step reveal reveal-delay-1">
+          <div class="step-number">2</div>
+          <h3>Rate your meals</h3>
+          <p>Love It, Meh, Try It, or Nope. One tap per meal.</p>
+        </div>
+        <div class="step reveal reveal-delay-2">
+          <div class="step-number">3</div>
+          <h3>Build your profile</h3>
+          <p>Tasterly learns what you love and remembers it all.</p>
+        </div>
+        <div class="step reveal reveal-delay-3">
+          <div class="step-number">4</div>
+          <h3>Never wonder again</h3>
+          <p>Swipe, spin, or ask AI. Decide in seconds, not minutes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Social Proof ────────────────────────────────────────────── -->
+  <section class="social-proof">
+    <div class="container">
+      <div class="reveal">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rating-text">5.0 on the App Store</div>
+        <p class="rating-sub">Rated by real people who were tired of food indecision</p>
+      </div>
+      <div class="testimonial reveal reveal-delay-1">
+        <p>"Very easy to use. I use it to help me select the best options for lunch every day and retrieve favorite meals I've had in the past."</p>
+        <cite>MaxGolfer72 &mdash; App Store Review</cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Pricing ─────────────────────────────────────────────────── -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="reveal">Start free. <span class="accent">Upgrade when you're ready.</span></h2>
+        <p class="reveal reveal-delay-1">Most features are free forever. Premium unlocks the full experience.</p>
+      </div>
+      <div class="pricing-cards">
+        <div class="pricing-card reveal">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <div class="price-sub">forever</div>
+          <ul>
+            <li>Rate meals &amp; build your profile</li>
+            <li>Organize by restaurant &amp; store</li>
+            <li>Swipe to Decide</li>
+            <li>Decide for Me wheel</li>
+            <li>Barcode scanning</li>
+            <li>Track deals &amp; happy hours</li>
+          </ul>
+          <a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" class="btn-pricing secondary" target="_blank" rel="noopener">Get Started Free</a>
+        </div>
+        <div class="pricing-card featured reveal reveal-delay-1">
+          <h3>Premium</h3>
+          <div class="price"><span class="accent">$3.99</span></div>
+          <div class="price-sub">/month or $39.99/year</div>
+          <ul>
+            <li>Everything in Free</li>
+            <li>AI-powered recommendations</li>
+            <li>Smart shopping lists</li>
+            <li>Share favorites with friends</li>
+            <li>Unlimited restaurants &amp; stores</li>
+            <li>Priority new features</li>
+          </ul>
+          <a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" class="btn-pricing primary" target="_blank" rel="noopener">Try Premium Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Final CTA ───────────────────────────────────────────────── -->
+  <section class="final-cta">
+    <div class="container">
+      <h2 class="reveal">Ready to never say<br><span class="accent">"I don't know"</span> again?</h2>
+      <p class="reveal reveal-delay-1">Join thousands of people who stopped wasting time and money on meals they didn't love.</p>
+      <a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" class="btn-hero reveal reveal-delay-2" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Download Tasterly Free
+      </a>
+    </div>
+  </section>
+
+  <!-- ─── Footer ──────────────────────────────────────────────────── -->
+  <footer id="privacy">
+    <div class="container">
+      <div class="footer-content">
+        <div>
+          <div class="footer-brand">
+            <img src="assets/TasterlyAppIcon.png" alt="Tasterly">
+            <span>Tasterly</span>
+          </div>
+          <p class="footer-tagline">Your personal food memory. Decide what to eat in seconds, not minutes.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="https://apps.apple.com/us/app/tasterly-decide-what-to-eat/id6751076458" target="_blank" rel="noopener">App Store</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="mailto:scott@tasterly.app">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Scott Yale. All rights reserved.</p>
+        <p>Made with real food opinions, not algorithms (okay, some algorithms).</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── Scroll Reveal ───────────────────────────────────────────── -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Navbar shrink on scroll
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('nav');
+      if (window.scrollY > 50) {
+        nav.style.padding = '10px 0';
+      } else {
+        nav.style.padding = '16px 0';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tasterly-website",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "D:\\AI\\Claude Code\\Tasterly Marketing\\website", "-l", "3456", "--no-clipboard"],
+      "port": 3456
+    }
+  ]
+}
